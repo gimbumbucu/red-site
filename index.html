@@ -55,25 +55,46 @@
         
         <div class="card-container">
             <div class="glass-card">
-                <h3>👥 유저 권한 관리 [스태프]</h3>
-                <p>회원가입한 일반 유저에게 스태프 등급을 부여하여 시스템 관리자 권한을 부여합니다.</p>
-                <button class="btn-secondary" onclick="alert('데이터가 외부 저장소와 연동시 활성화됩니다.')">권한 설정하기</button>
+                <h3>👥 유저 목록 및 권한 관리</h3>
+                <p>가입한 모든 유저를 조회하고, 다른 유저를 스태프로 승급시키거나 영구 차단(벤)할 수 있습니다.</p>
+                <button class="btn-secondary" onclick="openAdminModal('userManagerModal')">유저 관리 열기</button>
             </div>
             <div class="glass-card">
-                <h3>📝 문의 채널 내역</h3>
-                <p>접수된 버그 제보나 사용자 채팅 로그, 건의사항 등을 확인하고 직접 답변합니다.</p>
-                <button class="btn-secondary" onclick="alert('건의사항 데이터베이스와 연결이 필요합니다.')">문의함 열기</button>
+                <h3>📝 실시간 문의함 (<span id="inquiryCountCheck" style="color:#ff1f3a; font-weight:bold;">0</span>건)</h3>
+                <p>유저들이 제보한 문의사항 및 버그를 열람하고 처리 상태(완료)를 답변 형식으로 남길 수 있습니다.</p>
+                <button class="btn-secondary" onclick="openAdminModal('inquiryManagerModal')">문의함 관리 열기</button>
             </div>
             <div class="glass-card">
-                <h3>🛑 벤/차단 관리</h3>
-                <p>게임 내 악성 유저 또는 홈페이지 어뷰징 유저들의 차단을 관리합니다.</p>
-                <button class="btn-secondary" onclick="alert('벤 리스트 시스템 통신 모듈 대기중...')">블랙리스트 보기</button>
+                <h3>📢 게임/홈페이지 공지 팝업</h3>
+                <p>사이트에 접속하는 모든 유저의 화면 한가운데에 보여질 긴급 공지사항 내용을 설정하고 배포합니다.</p>
+                <button class="btn-secondary" onclick="openAdminModal('noticeManagerModal')">공지사항 설정</button>
             </div>
         </div>
     </section>
 
-    <!-- Gamepass Store Section -->
-    <section id="store" class="store-section">
+    <!-- About Game Section (Photo Gallery) -->
+    <section id="about" class="about-section">
+        <h2 class="section-title">게임 <span>소개</span></h2>
+        <p class="section-desc">극악의 난이도, 하지만 멈출 수 없는 중독성. 레드의 어드민 점프맵의 생생한 플레이 장면들입니다.</p>
+        
+        <div class="gallery-container">
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=600" alt="점프맵 스크린샷 1">
+                <div class="gallery-overlay"><span>끝없는 도전</span></div>
+            </div>
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=600" alt="점프맵 스크린샷 2">
+                <div class="gallery-overlay"><span>화려한 이펙트</span></div>
+            </div>
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1534423861386-85a16f5d13fd?auto=format&fit=crop&q=80&w=600" alt="점프맵 스크린샷 3">
+                <div class="gallery-overlay"><span>최고의 랭커</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gamepass Store Section (현재 준비 중 - 숨김 처리) -->
+    <section id="store" class="store-section" style="display: none;">
         <h2 class="section-title">게임패스 <span>상점</span></h2>
         <p class="section-desc">게임의 재미를 200% 끌어올릴 특별한 패스들을 만나보세요.</p>
         
@@ -162,6 +183,9 @@
                     <input type="password" id="loginPassword" required>
                 </div>
                 <button type="submit" class="btn-submit">접속하기</button>
+                <div style="text-align:center; margin-top:20px;">
+                    <a href="#" class="forgot-link" onclick="openModal('forgotPasswordModal'); closeModal('loginModal'); return false;">🔒 비밀번호를 잊으셨나요?</a>
+                </div>
             </form>
         </div>
     </div>
@@ -182,10 +206,103 @@
                 </div>
                 <div class="input-group">
                     <label>비밀번호</label>
-                    <input type="password" id="regPassword" required>
+                    <input type="password" id="regPassword" required minlength="6" placeholder="6자리 이상 입력해주세요">
+                </div>
+                <!-- 비밀번호 한 번 더 입력 (비교용) -->
+                <div class="input-group">
+                    <label>비밀번호 확인</label>
+                    <input type="password" id="regPasswordConfirm" required minlength="6" placeholder="비밀번호를 한 번 더 입력해주세요">
                 </div>
                 <button type="submit" class="btn-submit">가입완료</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="modal">
+        <div class="modal-content glass-card">
+            <span class="close" onclick="closeModal('forgotPasswordModal')">&times;</span>
+            <h2>🔎 비밀번호 찾기</h2>
+            <p style="color:#aaa; font-size:0.9rem; margin-bottom:20px;">가입할 때 사용한 이메일과 닉네임을 입력하시면 새로운 비밀번호로 재설정할 수 있습니다.</p>
+            <form id="forgotForm">
+                <div class="input-group">
+                    <label>가입된 이메일</label>
+                    <input type="email" id="forgotEmail" required placeholder="예: user@example.com">
+                </div>
+                <div class="input-group">
+                    <label>유저 이름 (닉네임)</label>
+                    <input type="text" id="forgotName" required placeholder="예: 레드최고짱님">
+                </div>
+                <!-- 인증 후 표시될 새 비밀번호 입력란 -->
+                <div class="input-group" id="newPasswordGroup" style="display:none; animation: fadeInSlide 0.3s ease;">
+                    <label style="color:var(--primary);">새로운 비밀번호 설정</label>
+                    <input type="password" id="forgotNewPassword" minlength="6" placeholder="새롭게 사용할 비밀번호">
+                </div>
+                
+                <button type="button" id="btnVerifyForgot" class="btn-submit">계정 정보 확인하기</button>
+                <button type="submit" id="btnResetPassword" class="btn-submit" style="display:none; background:var(--primary);">비밀번호 재설정 완료</button>
+            </form>
+            <div style="text-align:center; margin-top:20px;">
+                <a href="#" class="forgot-link" onclick="openModal('loginModal'); closeModal('forgotPasswordModal'); return false;">⬅️ 로그인 화면으로 돌아가기</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin: User Management Modal -->
+    <div id="userManagerModal" class="modal">
+        <div class="modal-admin-content glass-card">
+            <span class="close" onclick="closeModal('userManagerModal')">&times;</span>
+            <h2>👥 유저 관리 및 스태프 임명</h2>
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead><tr><th>닉네임</th><th>이메일</th><th>현재 권한</th><th>상태</th><th>관리 작업</th></tr></thead>
+                    <tbody id="userTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin: Inquiry Management Modal -->
+    <div id="inquiryManagerModal" class="modal">
+        <div class="modal-admin-content glass-card">
+            <span class="close" onclick="closeModal('inquiryManagerModal')">&times;</span>
+            <h2>📝 접수된 문의(티켓) 내역</h2>
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead><tr><th>요청자 (이메일/ID)</th><th>유형</th><th>문의 내용</th><th>처리 상태</th><th>관리 작업</th></tr></thead>
+                    <tbody id="inquiryTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin: Notice Management Modal -->
+    <div id="noticeManagerModal" class="modal">
+        <div class="modal-admin-content glass-card">
+            <span class="close" onclick="closeModal('noticeManagerModal')">&times;</span>
+            <h2>📢 전면 공지사항(팝업) 배포</h2>
+            <form id="noticeForm">
+                <div class="input-group">
+                    <label>공지사항 내용</label>
+                    <textarea id="noticeMessage" rows="5" placeholder="모든 접속자에게 보여질 내용을 상세히 적어주세요..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label style="display:flex; align-items:center; gap:10px; font-size:1.1rem; color:#fff;">
+                        <input type="checkbox" id="noticeActive" style="width:25px; height:25px;"> 화면 전면에 공지사항 띄우기 (ON/OFF)
+                    </label>
+                </div>
+                <button type="submit" class="btn-submit">공지사항 즉시 적용하기</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Global Notice Modal (For Users) -->
+    <div id="globalNoticeModal" class="modal">
+        <div class="modal-content glass-card" style="border-color: var(--primary);">
+            <span class="close" onclick="closeModal('globalNoticeModal')">&times;</span>
+            <h2 style="color: var(--primary);">📢 긴급 공지사항</h2>
+            <p id="globalNoticeText" style="margin: 20px 0; line-height: 1.6; font-size: 1.1rem; white-space: pre-wrap;"></p>
+            <button class="btn-primary" style="width:100%; border:none;" onclick="closeModal('globalNoticeModal')">확인했습니다</button>
         </div>
     </div>
 
