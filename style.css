@@ -1,360 +1,196 @@
-/* Base Resets */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    scroll-behavior: smooth;
-}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 검색 엔진 최적화 (SEO) 태그 -->
+    <title>레드의 어드민 점프맵 | 극강의 난이도 로블록스 점프맵</title>
+    <meta name="description" content="로블록스 최고의 화제작, 레드의 어드민 점프맵 공식 홈페이지! 숨막히는 극강의 난이도에 도전하고 특별한 관리자 권한(어드민)을 상점에서 만나보세요.">
+    <meta name="keywords" content="로블록스, 레드의 어드민 점프맵, 점프맵, 로블록스 점프맵, Roblox, Obby, Admin Jumpmap, 게임패스">
+    <meta name="author" content="RED">
+    
+    <!-- 소셜 미디어 공유(카카오톡, 디스코드 등)를 위한 Open Graph 태그 -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="레드의 어드민 점프맵 | 공식 홈페이지">
+    <meta property="og:description" content="극강의 난이도 점프맵에서 당신의 한계에 도전하세요! 랭커 달성과 어드민 권한 상점.">
+    <meta property="og:site_name" content="레드의 어드민 점프맵">
 
-body {
-    font-family: 'Outfit', 'Noto Sans KR', sans-serif;
-    background-color: #08080a; /* Deep dark background */
-    color: #ffffff;
-    overflow-x: hidden;
-}
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
 
-/* Colors & Variables */
-:root {
-    --primary: #ff1f3a;
-    --primary-glow: rgba(255, 31, 58, 0.4);
-    --dark-glass: rgba(20, 20, 25, 0.6);
-    --border-glass: rgba(255, 255, 255, 0.08);
-}
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">RED's<br><span>Admin JumpMap</span></div>
+        </ul>
+        <div class="nav-actions">
+            <button id="btnLoginBtn" class="btn-auth" onclick="openModal('loginModal')">로그인</button>
+            <button id="btnRegBtn" class="btn-auth-outline" onclick="openModal('registerModal')">회원가입</button>
+            <button id="btnLogoutBtn" class="btn-auth" style="display:none;" onclick="logout()">로그아웃</button>
+            <a href="https://www.roblox.com/games/115788119146113" target="_blank" class="btn-primaryplay">게임 플레이</a>
+        </div>
+    </nav>
 
-/* Navigation */
-.navbar {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    padding: 20px 50px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(8, 8, 10, 0.8);
-    backdrop-filter: blur(15px);
-    z-index: 1000;
-    border-bottom: 1px solid var(--border-glass);
-}
+    <!-- Hero Section -->
+    <header id="home" class="hero">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="hero-content">
+            <h1>당신의 한계에<br><span class="highlight">도전하세요</span></h1>
+            <p>레드의 어드민 점프맵에서 극강의 난이도와 특별한 관리자 권한을 경험해보세요.<br>지금 바로 접속해서 최고의 기록을 세워보세요!</p>
+            <div class="hero-btns">
+                <a href="#store" class="btn-primary">상점 둘러보기</a>
+                <a href="https://discord.gg/kPusse9UVS" target="_blank" class="btn-secondary">디스코드 참가</a>
+            </div>
+        </div>
+    </header>
 
-.logo {
-    font-size: 1.2rem;
-    font-weight: 900;
-    line-height: 1.1;
-    letter-spacing: 1px;
-    color: var(--primary);
-}
-.logo span {
-    font-size: 0.9rem;
-    color: #fff;
-    font-weight: 300;
-    letter-spacing: 2px;
-}
+    <!-- Admin Panel Section -->
+    <section id="adminPanel" class="admin-section" style="display: none;">
+        <h2 class="section-title">스태프 <span>관리 패널</span></h2>
+        <p class="section-desc">총괄 관리자(SuperAdmin) 및 스태프 전용 권한 설정 공간입니다.</p>
+        
+        <div class="card-container">
+            <div class="glass-card">
+                <h3>👥 유저 권한 관리 [스태프]</h3>
+                <p>회원가입한 일반 유저에게 스태프 등급을 부여하여 시스템 관리자 권한을 부여합니다.</p>
+                <button class="btn-secondary" onclick="alert('데이터가 외부 저장소와 연동시 활성화됩니다.')">권한 설정하기</button>
+            </div>
+            <div class="glass-card">
+                <h3>📝 문의 채널 내역</h3>
+                <p>접수된 버그 제보나 사용자 채팅 로그, 건의사항 등을 확인하고 직접 답변합니다.</p>
+                <button class="btn-secondary" onclick="alert('건의사항 데이터베이스와 연결이 필요합니다.')">문의함 열기</button>
+            </div>
+            <div class="glass-card">
+                <h3>🛑 벤/차단 관리</h3>
+                <p>게임 내 악성 유저 또는 홈페이지 어뷰징 유저들의 차단을 관리합니다.</p>
+                <button class="btn-secondary" onclick="alert('벤 리스트 시스템 통신 모듈 대기중...')">블랙리스트 보기</button>
+            </div>
+        </div>
+    </section>
 
-.nav-links {
-    list-style: none;
-    display: flex;
-    gap: 30px;
-}
+    <!-- Gamepass Store Section -->
+    <section id="store" class="store-section">
+        <h2 class="section-title">게임패스 <span>상점</span></h2>
+        <p class="section-desc">게임의 재미를 200% 끌어올릴 특별한 패스들을 만나보세요.</p>
+        
+        <div class="card-container">
+            <!-- Item 1 -->
+            <div class="glass-card">
+                <div class="card-icon">👑</div>
+                <h3>VIP 어드민 권한</h3>
+                <p>일반 유저는 사용할 수 없는 특별한 날기(Fly) 및 스피드 명령어 사용이 가능해집니다.</p>
+                <div class="price">💰 499 Robux</div>
+                <a href="#" class="btn-buy">구매하기</a>
+            </div>
+            <!-- Item 2 -->
+            <div class="glass-card">
+                <div class="card-icon">🛡️</div>
+                <h3>무적 쉴드 (Invincible)</h3>
+                <p>라바, 가시 등 어떠한 장애물에도 죽지 않고 점프맵을 클리어할 수 있는 사기급 패스!</p>
+                <div class="price">💰 899 Robux</div>
+                <a href="#" class="btn-buy">구매하기</a>
+            </div>
+            <!-- Item 3 -->
+            <div class="glass-card">
+                <div class="card-icon">✨</div>
+                <h3>프리미엄 무지개 트레일</h3>
+                <p>걸어다닐 때마다 무지개빛 화려한 이펙트가 발자취를 따라옵니다. 인싸들의 필수품!</p>
+                <div class="price">💰 150 Robux</div>
+                <a href="#" class="btn-buy">구매하기</a>
+            </div>
+        </div>
+    </section>
 
-.nav-links a {
-    color: #aaa;
-    text-decoration: none;
-    font-weight: 400;
-    transition: color 0.3s ease;
-    font-size: 0.95rem;
-}
+    <!-- Contact & Support Section -->
+    <section id="contact" class="contact-section">
+        <h2 class="section-title"><span>문의</span> 채널</h2>
+        <p class="section-desc">버그 제보나 기타 건의사항을 관리자에게 직접 남겨주세요.</p>
+        
+        <div class="contact-wrapper">
+            <div class="contact-info glass-card">
+                <h3>💬 공식 디스코드 커뮤니티</h3>
+                <p>가장 빠른 답변을 원하신다면 공식 디스코드 서버에 접속해서 티켓을 열어주세요!</p>
+                <a href="https://discord.gg/kPusse9UVS" target="_blank" class="btn-discord">Discord 참여하기</a>
+            </div>
+            
+            <form class="contact-form glass-card" id="supportForm">
+                <h3>편지 보내기 (Web Admin)</h3>
+                <div class="input-group">
+                    <label>로블록스 아이디</label>
+                    <input type="text" placeholder="예: Player123" required>
+                </div>
+                <div class="input-group">
+                    <label>문의 유형</label>
+                    <select>
+                        <option>버그 제보</option>
+                        <option>아이템 미지급 문의</option>
+                        <option>유저 신고 / 밴 해제 요청</option>
+                        <option>기타 건의사항</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>내용</label>
+                    <textarea rows="4" placeholder="상세한 내용을 적어주세요..." required></textarea>
+                </div>
+                <button type="submit" class="btn-submit">문의 접수하기</button>
+            </form>
+        </div>
+    </section>
 
-.nav-links a:hover {
-    color: #fff;
-}
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 RED's Admin JumpMap. All rights reserved.</p>
+        <p>This site is not affiliated with or endorsed by Roblox Corporation.</p>
+    </footer>
 
-.btn-primaryplay {
-    background: var(--primary);
-    color: white;
-    padding: 10px 24px;
-    border-radius: 30px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 15px var(--primary-glow);
-}
-.btn-primaryplay:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 25px var(--primary-glow);
-}
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content glass-card">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <h2>로그인</h2>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label>이메일</label>
+                    <input type="email" id="loginEmail" placeholder="접속 이메일" required>
+                </div>
+                <div class="input-group">
+                    <label>비밀번호</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn-submit">접속하기</button>
+            </form>
+        </div>
+    </div>
 
-/* Hero Section */
-.hero {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    position: relative;
-    padding: 0 20px;
-}
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content glass-card">
+            <span class="close" onclick="closeModal('registerModal')">&times;</span>
+            <h2>회원가입</h2>
+            <form id="registerForm">
+                <div class="input-group">
+                    <label>유저 이름 (닉네임)</label>
+                    <input type="text" id="regName" required>
+                </div>
+                <div class="input-group">
+                    <label>이메일</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="input-group">
+                    <label>비밀번호</label>
+                    <input type="password" id="regPassword" required>
+                </div>
+                <button type="submit" class="btn-submit">가입완료</button>
+            </form>
+        </div>
+    </div>
 
-.glow-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(120px);
-    z-index: -1;
-    animation: float 8s infinite alternate ease-in-out;
-}
-.orb-1 {
-    width: 400px;
-    height: 400px;
-    background: var(--primary-glow);
-    top: 20%;
-    left: 10%;
-}
-.orb-2 {
-    width: 300px;
-    height: 300px;
-    background: rgba(80, 20, 40, 0.5);
-    bottom: 10%;
-    right: 15%;
-    animation-delay: -3s;
-}
-
-@keyframes float {
-    0% { transform: translateY(0px) scale(1); }
-    100% { transform: translateY(-50px) scale(1.1); }
-}
-
-.hero-content h1 {
-    font-size: 4.5rem;
-    font-weight: 900;
-    line-height: 1.2;
-    margin-bottom: 20px;
-}
-
-.highlight {
-    background: linear-gradient(90deg, #ff1f3a, #ff7b54);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.hero-content p {
-    font-size: 1.2rem;
-    color: #ccc;
-    margin-bottom: 40px;
-    font-weight: 300;
-}
-
-.hero-btns {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-}
-
-.btn-primary, .btn-secondary {
-    padding: 15px 35px;
-    border-radius: 30px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1.1rem;
-    transition: all 0.3s ease;
-}
-
-.btn-primary {
-    background: var(--primary);
-    color: white;
-    box-shadow: 0 0 20px var(--primary-glow);
-}
-.btn-primary:hover {
-    box-shadow: 0 0 35px var(--primary-glow);
-    transform: translateY(-3px);
-}
-
-.btn-secondary {
-    background: transparent;
-    color: white;
-    border: 1px solid var(--border-glass);
-    backdrop-filter: blur(5px);
-}
-.btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-/* Sections Global */
-section {
-    padding: 100px 10%;
-}
-
-.section-title {
-    font-size: 2.5rem;
-    font-weight: 800;
-    text-align: center;
-    margin-bottom: 10px;
-}
-.section-title span {
-    color: var(--primary);
-}
-.section-desc {
-    text-align: center;
-    color: #999;
-    margin-bottom: 60px;
-    font-size: 1.1rem;
-}
-
-/* Glasscard Aesthetics */
-.glass-card {
-    background: var(--dark-glass);
-    border: 1px solid var(--border-glass);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 20px;
-    padding: 40px;
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
-}
-
-/* Store Section */
-.card-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-}
-
-.glass-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(255, 31, 58, 0.2);
-    border-color: rgba(255, 31, 58, 0.3);
-}
-
-.card-icon {
-    font-size: 3rem;
-    margin-bottom: 20px;
-}
-
-.glass-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: 15px;
-}
-
-.glass-card p {
-    color: #aaa;
-    line-height: 1.6;
-    margin-bottom: 25px;
-    font-size: 0.95rem;
-}
-
-.price {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #ffcc00; /* Robux Gold */
-    margin-bottom: 25px;
-}
-
-.btn-buy {
-    display: block;
-    text-align: center;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-glass);
-    border-radius: 12px;
-    color: white;
-    text-decoration: none;
-    font-weight: 600;
-    transition: 0.3s;
-}
-.btn-buy:hover {
-    background: white;
-    color: black;
-}
-
-/* Contact Section */
-.contact-wrapper {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-}
-
-.contact-info h3 {
-    font-size: 1.4rem;
-    margin-bottom: 10px;
-}
-.contact-info p {
-    color: #aaa;
-    margin-bottom: 30px;
-    line-height: 1.6;
-}
-.btn-discord {
-    display: inline-block;
-    background: #5865F2; /* Discord Color */
-    color: white;
-    padding: 12px 25px;
-    border-radius: 12px;
-    text-decoration: none;
-    font-weight: bold;
-    transition: 0.3s;
-}
-.btn-discord:hover {
-    background: #4752C4;
-    transform: translateY(-2px);
-}
-
-/* Forms */
-.contact-form h3 {
-    margin-bottom: 25px;
-}
-.input-group {
-    margin-bottom: 20px;
-}
-.input-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
-    color: #ccc;
-}
-.input-group input, .input-group select, .input-group textarea {
-    width: 100%;
-    padding: 15px;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
-    color: white;
-    font-family: inherit;
-    font-size: 1rem;
-    transition: 0.3s;
-}
-.input-group input:focus, .input-group select:focus, .input-group textarea:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 10px var(--primary-glow);
-}
-
-.btn-submit {
-    width: 100%;
-    padding: 15px;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-}
-.btn-submit:hover {
-    background: #d4142d;
-}
-
-/* Footer */
-footer {
-    text-align: center;
-    padding: 40px;
-    border-top: 1px solid var(--border-glass);
-    color: #666;
-    font-size: 0.9rem;
-}
-
-/* Responsive Design */
-@media (max-width: 900px) {
-    .contact-wrapper {
-        grid-template-columns: 1fr;
-    }
-    .hero-content h1 {
-        font-size: 3rem;
-    }
-}
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>
