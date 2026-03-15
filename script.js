@@ -146,100 +146,35 @@ document.addEventListener("DOMContentLoaded", () => {
 // 👑 주요 함수 (함수 선언부는 밖으로 뺌)
 // =====================================
 
-// 방문 기록 함수 (중요: _supabase 사용)
+// 방문 기록 함수 (IP 수집 기능 추가 버전)
 async function logVisit() {
-    const { error } = await _supabase
-        .from('visit_logs')
-        .insert([
-            { 
-                page_path: window.location.pathname,
-                referrer: document.referrer || 'direct',
-                user_agent: navigator.userAgent
-            }
-        ]);
+    try {
+        // 1. 외부 API를 통해 유저의 진짜 IP를 알아냅니다.
+        const ipRes = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipRes.json();
+        const userIp = ipData.ip;
 
-    if (error) console.error('방문 기록 저장 실패:', error);
-    else console.log('방문 기록이 성공적으로 저장되었습니다.');
-}
+        // 2. 알아낸 IP를 포함해서 수파베이스에 저장합니다.
+        const { error } = await _supabase
+            .from('visit_logs')
+            .insert([
+                { 
+                    page_path: window.location.pathname,
+                    referrer: document.referrer || 'direct',
+                    user_agent: navigator.userAgent,
+                    ip_address: userIp // 이제 진짜 IP가 들어갑니다!
+                }
+            ]);
 
-async function checkAuth() {
-    const sessionUser = JSON.parse(localStorage.getItem('user'));
-    const btnLogin = document.getElementById('btnLoginBtn');
-    const btnReg = document.getElementById('btnRegBtn');
-    const btnLogout = document.getElementById('btnLogoutBtn');
-    const adminPanel = document.getElementById('adminPanel');
-    const logoSpan = document.querySelector('.logo span');
-
-    if (sessionUser) {
-        if(btnLogin) btnLogin.style.display = "none";
-        if(btnReg) btnReg.style.display = "none";
-        if(btnLogout) {
-            btnLogout.style.display = "inline-block";
-            btnLogout.innerText = sessionUser.name + " 님 (로그아웃)";
-        }
-
-        const { data: staffData } = await _supabase.from('staff').select('*').eq('email', sessionUser.email);
-        
-        if (sessionUser.email === 'tgimbumbucu@gmail.com' || (staffData && staffData.length > 0)) {
-            if(adminPanel) adminPanel.style.display = "block";
-            const role = (sessionUser.email === 'tgimbumbucu@gmail.com') ? 'SuperAdmin' : staffData[0].role_name;
-            if(logoSpan) logoSpan.innerHTML = `<strong style='color:#ffcc00;'>[${role}] Mode</strong>`;
-        }
+        if (error) throw error;
+        console.log('✅ 방문 기록 저장 완료 (IP:', userIp, ')');
+    } catch (err) {
+        // IP 가져오기에 실패하더라도 다른 정보는 저장하도록 예외 처리
+        console.error('IP 수집 실패:', err);
+        await _supabase.from('visit_logs').insert([{ 
+            page_path: window.location.pathname,
+            referrer: document.referrer || 'direct',
+            user_agent: navigator.userAgent
+        }]);
     }
 }
-
-async function promoteToStaff(email, name) {
-    const role = prompt("역할 입력 (예: Staff, Manager)", "Staff");
-    if(!role) return;
-    await _supabase.from('staff').insert([{ email: email, username: name, role_name: role }]);
-    alert("임명 완료");
-    renderUserTable();
-}
-
-async function demoteFromStaff(email) {
-    if(!confirm("스태프 권한을 해제할까요?")) return;
-    await _supabase.from('staff').delete().eq('email', email);
-    alert("해제 완료");
-    renderUserTable();
-}
-
-async function renderUserTable() {
-    const tbody = document.getElementById('userTableBody');
-    if(!tbody) return;
-    const { data: profiles } = await _supabase.from('profiles').select('*');
-    const { data: staffList } = await _supabase.from('staff').select('*');
-
-    tbody.innerHTML = '';
-    profiles.forEach(u => {
-        const staffInfo = staffList.find(s => s.email === u.email);
-        const roleText = staffInfo ? `<span style="color:#f39c12">${staffInfo.role_name}</span>` : '일반유저';
-        
-        tbody.innerHTML += `
-            <tr>
-                <td>${u.username}</td>
-                <td>${u.email}</td>
-                <td><strong>${roleText}</strong></td>
-                <td><span class="status-badge success">정상</span></td>
-                <td>
-                    ${staffInfo ? 
-                        `<button class="btn-action danger" onclick="demoteFromStaff('${u.email}')">해제</button>` : 
-                        `<button class="btn-action success" onclick="promoteToStaff('${u.email}', '${u.username}')">임명</button>`
-                    }
-                </td>
-            </tr>`;
-    });
-}
-
-async function showGlobalNoticeIfActive() {
-    const { data } = await _supabase.from('notices').select('*').order('created_at', { ascending: false }).limit(1);
-    if (data && data[0] && data[0].is_active) {
-        const noticeText = document.getElementById('globalNoticeText');
-        if(noticeText) noticeText.innerText = data[0].content;
-        openModal('globalNoticeModal');
-    }
-}
-
-function openModal(id) { const el = document.getElementById(id); if(el) el.style.display = "block"; }
-function closeModal(id) { const el = document.getElementById(id); if(el) el.style.display = "none"; }
-function logout() { localStorage.removeItem('user'); location.reload(); }
-function openAdminModal(id) { if(id==='userManagerModal') renderUserTable(); openModal(id); }
