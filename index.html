@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 검색 엔진 최적화 (SEO) 태그 -->
     <title>레드의 어드민 점프맵 | 극강의 난이도 로블록스 점프맵</title>
     <meta name="description" content="로블록스 최고의 화제작, 레드의 어드민 점프맵 공식 홈페이지! 숨막히는 극강의 난이도에 도전하고 특별한 관리자 권한(어드민)을 상점에서 만나보세요.">
     <meta name="keywords" content="로블록스, 레드의 어드민 점프맵, 점프맵, 로블록스 점프맵, Roblox, Obby, Admin Jumpmap, 게임패스">
@@ -12,22 +11,20 @@
 
     <meta name="google-site-verification" content="C1-lUbMgIDhpdgWObpZz7Fwn2M9xZfI7F_dBEk_MbM4" />
     
-    <!-- 소셜 미디어 공유(카카오톡, 디스코드 등)를 위한 Open Graph 태그 -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="레드의 어드민 점프맵 | 공식 홈페이지">
     <meta property="og:description" content="극강의 난이도 점프맵에서 당신의 한계에 도전하세요! 랭커 달성과 어드민 권한 상점.">
     <meta property="og:site_name" content="레드의 어드민 점프맵">
 
     <link rel="stylesheet" href="style.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="logo">RED's<br><span>Admin JumpMap</span></div>
-        </ul>
         <div class="nav-actions">
             <button id="btnLoginBtn" class="btn-auth" onclick="openModal('loginModal')">로그인</button>
             <button id="btnRegBtn" class="btn-auth-outline" onclick="openModal('registerModal')">회원가입</button>
@@ -36,7 +33,6 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <header id="home" class="hero">
         <div class="glow-orb orb-1"></div>
         <div class="glow-orb orb-2"></div>
@@ -50,7 +46,6 @@
         </div>
     </header>
 
-    <!-- Admin Panel Section -->
     <section id="adminPanel" class="admin-section" style="display: none;">
         <h2 class="section-title">스태프 <span>관리 패널</span></h2>
         <p class="section-desc">총괄 관리자(SuperAdmin) 및 스태프 전용 권한 설정 공간입니다.</p>
@@ -58,23 +53,22 @@
         <div class="card-container">
             <div class="glass-card">
                 <h3>👥 유저 목록 및 권한 관리</h3>
-                <p>가입한 모든 유저를 조회하고, 다른 유저를 스태프로 승급시키거나 영구 차단(벤)할 수 있습니다.</p>
+                <p>가입한 모든 유저를 조회하고, 다른 유저를 스태프로 승급시키거나 영구 차단할 수 있습니다.</p>
                 <button class="btn-secondary" onclick="openAdminModal('userManagerModal')">유저 관리 열기</button>
             </div>
             <div class="glass-card">
                 <h3>📝 실시간 문의함 (<span id="inquiryCountCheck" style="color:#ff1f3a; font-weight:bold;">0</span>건)</h3>
-                <p>유저들이 제보한 문의사항 및 버그를 열람하고 처리 상태(완료)를 답변 형식으로 남길 수 있습니다.</p>
+                <p>유저들이 제보한 문의사항 및 버그를 열람하고 처리 상태를 관리할 수 있습니다.</p>
                 <button class="btn-secondary" onclick="openAdminModal('inquiryManagerModal')">문의함 관리 열기</button>
             </div>
             <div class="glass-card">
                 <h3>📢 게임/홈페이지 공지 팝업</h3>
-                <p>사이트에 접속하는 모든 유저의 화면 한가운데에 보여질 긴급 공지사항 내용을 설정하고 배포합니다.</p>
+                <p>사이트에 접속하는 모든 유저의 화면 한가운데에 보여질 긴급 공지사항을 배포합니다.</p>
                 <button class="btn-secondary" onclick="openAdminModal('noticeManagerModal')">공지사항 설정</button>
             </div>
         </div>
     </section>
 
-    <!-- About Game Section (Photo Gallery) -->
     <section id="about" class="about-section">
         <h2 class="section-title">게임 <span>소개</span></h2>
         <p class="section-desc">극악의 난이도, 하지만 멈출 수 없는 중독성. 레드의 어드민 점프맵의 생생한 플레이 장면들입니다.</p>
@@ -95,40 +89,6 @@
         </div>
     </section>
 
-    <!-- Gamepass Store Section (현재 준비 중 - 숨김 처리) -->
-    <section id="store" class="store-section" style="display: none;">
-        <h2 class="section-title">게임패스 <span>상점</span></h2>
-        <p class="section-desc">게임의 재미를 200% 끌어올릴 특별한 패스들을 만나보세요.</p>
-        
-        <div class="card-container">
-            <!-- Item 1 -->
-            <div class="glass-card">
-                <div class="card-icon">👑</div>
-                <h3>VIP 어드민 권한</h3>
-                <p>일반 유저는 사용할 수 없는 특별한 날기(Fly) 및 스피드 명령어 사용이 가능해집니다.</p>
-                <div class="price">💰 499 Robux</div>
-                <a href="#" class="btn-buy">구매하기</a>
-            </div>
-            <!-- Item 2 -->
-            <div class="glass-card">
-                <div class="card-icon">🛡️</div>
-                <h3>무적 쉴드 (Invincible)</h3>
-                <p>라바, 가시 등 어떠한 장애물에도 죽지 않고 점프맵을 클리어할 수 있는 사기급 패스!</p>
-                <div class="price">💰 899 Robux</div>
-                <a href="#" class="btn-buy">구매하기</a>
-            </div>
-            <!-- Item 3 -->
-            <div class="glass-card">
-                <div class="card-icon">✨</div>
-                <h3>프리미엄 무지개 트레일</h3>
-                <p>걸어다닐 때마다 무지개빛 화려한 이펙트가 발자취를 따라옵니다. 인싸들의 필수품!</p>
-                <div class="price">💰 150 Robux</div>
-                <a href="#" class="btn-buy">구매하기</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact & Support Section -->
     <section id="contact" class="contact-section">
         <h2 class="section-title"><span>문의</span> 채널</h2>
         <p class="section-desc">버그 제보나 기타 건의사항을 관리자에게 직접 남겨주세요.</p>
@@ -164,13 +124,11 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
         <p>© 2026 RED's Admin JumpMap. All rights reserved.</p>
         <p>This site is not affiliated with or endorsed by Roblox Corporation.</p>
     </footer>
 
-    <!-- Login Modal -->
     <div id="loginModal" class="modal">
         <div class="modal-content glass-card">
             <span class="close" onclick="closeModal('loginModal')">&times;</span>
@@ -192,7 +150,6 @@
         </div>
     </div>
 
-    <!-- Register Modal -->
     <div id="registerModal" class="modal">
         <div class="modal-content glass-card">
             <span class="close" onclick="closeModal('registerModal')">&times;</span>
@@ -210,7 +167,6 @@
                     <label>비밀번호</label>
                     <input type="password" id="regPassword" required minlength="6" placeholder="6자리 이상 입력해주세요">
                 </div>
-                <!-- 비밀번호 한 번 더 입력 (비교용) -->
                 <div class="input-group">
                     <label>비밀번호 확인</label>
                     <input type="password" id="regPasswordConfirm" required minlength="6" placeholder="비밀번호를 한 번 더 입력해주세요">
@@ -220,37 +176,30 @@
         </div>
     </div>
 
-    <!-- Forgot Password Modal -->
     <div id="forgotPasswordModal" class="modal">
         <div class="modal-content glass-card">
             <span class="close" onclick="closeModal('forgotPasswordModal')">&times;</span>
             <h2>🔎 비밀번호 찾기</h2>
-            <p style="color:#aaa; font-size:0.9rem; margin-bottom:20px;">가입할 때 사용한 이메일과 닉네임을 입력하시면 새로운 비밀번호로 재설정할 수 있습니다.</p>
+            <p style="color:#aaa; font-size:0.9rem; margin-bottom:20px;">이메일과 닉네임을 입력하시면 비밀번호를 재설정할 수 있습니다.</p>
             <form id="forgotForm">
                 <div class="input-group">
                     <label>가입된 이메일</label>
-                    <input type="email" id="forgotEmail" required placeholder="예: user@example.com">
+                    <input type="email" id="forgotEmail" required>
                 </div>
                 <div class="input-group">
                     <label>유저 이름 (닉네임)</label>
                     <input type="text" id="forgotName" required>
                 </div>
-                <!-- 인증 후 표시될 새 비밀번호 입력란 -->
-                <div class="input-group" id="newPasswordGroup" style="display:none; animation: fadeInSlide 0.3s ease;">
+                <div class="input-group" id="newPasswordGroup" style="display:none;">
                     <label style="color:var(--primary);">새로운 비밀번호 설정</label>
-                    <input type="password" id="forgotNewPassword" minlength="6" placeholder="새롭게 사용할 비밀번호">
+                    <input type="password" id="forgotNewPassword" minlength="6">
                 </div>
-                
                 <button type="button" id="btnVerifyForgot" class="btn-submit">계정 정보 확인하기</button>
-                <button type="submit" id="btnResetPassword" class="btn-submit" style="display:none; background:var(--primary);">비밀번호 재설정 완료</button>
+                <button type="submit" id="btnResetPassword" class="btn-submit" style="display:none;">비밀번호 재설정 완료</button>
             </form>
-            <div style="text-align:center; margin-top:20px;">
-                <a href="#" class="forgot-link" onclick="openModal('loginModal'); closeModal('forgotPasswordModal'); return false;">⬅️ 로그인 화면으로 돌아가기</a>
-            </div>
         </div>
     </div>
 
-    <!-- Admin: User Management Modal -->
     <div id="userManagerModal" class="modal">
         <div class="modal-admin-content glass-card">
             <span class="close" onclick="closeModal('userManagerModal')">&times;</span>
@@ -264,46 +213,41 @@
         </div>
     </div>
 
-    <!-- Admin: Inquiry Management Modal -->
     <div id="inquiryManagerModal" class="modal">
         <div class="modal-admin-content glass-card">
             <span class="close" onclick="closeModal('inquiryManagerModal')">&times;</span>
             <h2>📝 접수된 문의(티켓) 내역</h2>
             <div class="table-container">
                 <table class="admin-table">
-                    <thead><tr><th>요청자 (이메일/ID)</th><th>유형</th><th>문의 내용</th><th>처리 상태</th><th>관리 작업</th></tr></thead>
+                    <thead><tr><th>요청자</th><th>유형</th><th>문의 내용</th><th>처리 상태</th><th>관리 작업</th></tr></thead>
                     <tbody id="inquiryTableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Admin: Notice Management Modal -->
     <div id="noticeManagerModal" class="modal">
         <div class="modal-admin-content glass-card">
             <span class="close" onclick="closeModal('noticeManagerModal')">&times;</span>
-            <h2>📢 전면 공지사항(팝업) 배포</h2>
+            <h2>📢 전면 공지사항 배포</h2>
             <form id="noticeForm">
                 <div class="input-group">
                     <label>공지사항 내용</label>
-                    <textarea id="noticeMessage" rows="5" placeholder="모든 접속자에게 보여질 내용을 상세히 적어주세요..."></textarea>
+                    <textarea id="noticeMessage" rows="5"></textarea>
                 </div>
                 <div class="input-group">
-                    <label style="display:flex; align-items:center; gap:10px; font-size:1.1rem; color:#fff;">
-                        <input type="checkbox" id="noticeActive" style="width:25px; height:25px;"> 화면 전면에 공지사항 띄우기 (ON/OFF)
-                    </label>
+                    <label style="color:#fff;"><input type="checkbox" id="noticeActive"> 화면 전면에 공지사항 띄우기 (ON/OFF)</label>
                 </div>
                 <button type="submit" class="btn-submit">공지사항 즉시 적용하기</button>
             </form>
         </div>
     </div>
 
-    <!-- Global Notice Modal (For Users) -->
     <div id="globalNoticeModal" class="modal">
         <div class="modal-content glass-card" style="border-color: var(--primary);">
             <span class="close" onclick="closeModal('globalNoticeModal')">&times;</span>
             <h2 style="color: var(--primary);">📢 긴급 공지사항</h2>
-            <p id="globalNoticeText" style="margin: 20px 0; line-height: 1.6; font-size: 1.1rem; white-space: pre-wrap;"></p>
+            <p id="globalNoticeText" style="margin: 20px 0; line-height: 1.6; white-space: pre-wrap;"></p>
             <button class="btn-primary" style="width:100%; border:none;" onclick="closeModal('globalNoticeModal')">확인했습니다</button>
         </div>
     </div>
