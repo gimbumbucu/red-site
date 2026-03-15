@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/redsite",
+      "destination": "/index.html"
+    }
+  ]
+}
