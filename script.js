@@ -1,10 +1,13 @@
-// 🟢 script.js 맨 윗부분 수정
-const SUPABASE_URL = 'https://humphqmvfbslumfupxlb.supabase.co'; // [General] 탭에서 확인 가능!
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1bXBocW12ZmJzbHVtZnVweGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NTA2NjUsImV4cCI6MjA4OTEyNjY2NX0.GhNnCIf51lQj-CINq-4vt1DqDTsfsUZVg3Yjtg7W_Ow'; // 방금 복사한 그 키
+// 🟢 1. Supabase 초기화 (변수명 _supabase로 통일)
+const SUPABASE_URL = 'https://humphqmvfbslumfupxlb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1bXBocW12ZmJzbHVtZnVweGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NTA2NjUsImV4cCI6MjA4OTEyNjY2NX0.GhNnCIf51lQj-CINq-4vt1DqDTsfsUZVg3Yjtg7W_Ow';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. [기존 유지] 네비게이션 스크롤 이동
+    // 🚀 방문 기록 실행 (가장 먼저 실행)
+    logVisit();
+
+    // 2. [기존] 네비게이션 스크롤 이동
     document.querySelectorAll('.nav-links a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
@@ -14,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 2. [기존 유지] 스크롤 네비게이션 블러 효과
+    // 3. [기존] 스크롤 네비게이션 블러 효과
     const navbar = document.querySelector('.navbar');
     window.addEventListener('scroll', () => {
         if (window.scrollY > 50) {
@@ -26,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 3. [기존 유지] 요소 페이드인 애니메이션
+    // 4. [기존] 요소 페이드인 애니메이션
     const cards = document.querySelectorAll('.glass-card, .gallery-item');
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -44,13 +47,11 @@ document.addEventListener("DOMContentLoaded", () => {
         observer.observe(card);
     });
 
-    // 4. 초기 데이터 로드
+    // 5. 초기 데이터 로드
     checkAuth();
     showGlobalNoticeIfActive();
 
-    // =====================================
-    // 🔐 회원가입 (Supabase 연동)
-    // =====================================
+    // 🔐 회원가입 로직
     const regForm = document.getElementById('registerForm');
     if (regForm) {
         regForm.addEventListener('submit', async (e) => {
@@ -72,7 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (error) alert('가입 실패: ' + error.message);
             else {
-                // profiles 테이블에 추가 정보 저장
                 await _supabase.from('profiles').insert([{ id: data.user.id, username: name, email: email }]);
                 alert('🎉 가입 성공! 이제 로그인해 주세요.');
                 closeModal('registerModal');
@@ -81,9 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // =====================================
-    // 🔑 로그인 (Supabase 연동)
-    // =====================================
+    // 🔑 로그인 로직
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -104,9 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // =====================================
-    // 📝 문의사항 접수 (Supabase 연동)
-    // =====================================
+    // 📝 문의사항 접수
     const supportForm = document.getElementById("supportForm");
     if (supportForm) {
         supportForm.addEventListener("submit", async (e) => {
@@ -126,9 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // =====================================
-    // 📢 공지사항 설정 (관리자 전용)
-    // =====================================
+    // 📢 공지사항 설정
     const noticeForm = document.getElementById("noticeForm");
     if(noticeForm) {
         noticeForm.addEventListener('submit', async (e) => {
@@ -149,8 +143,25 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // =====================================
-// 👑 권한 및 관리자 액션 로직
+// 👑 주요 함수 (함수 선언부는 밖으로 뺌)
 // =====================================
+
+// 방문 기록 함수 (중요: _supabase 사용)
+async function logVisit() {
+    const { error } = await _supabase
+        .from('visit_logs')
+        .insert([
+            { 
+                page_path: window.location.pathname,
+                referrer: document.referrer || 'direct',
+                user_agent: navigator.userAgent
+            }
+        ]);
+
+    if (error) console.error('방문 기록 저장 실패:', error);
+    else console.log('방문 기록이 성공적으로 저장되었습니다.');
+}
+
 async function checkAuth() {
     const sessionUser = JSON.parse(localStorage.getItem('user'));
     const btnLogin = document.getElementById('btnLoginBtn');
@@ -160,23 +171,23 @@ async function checkAuth() {
     const logoSpan = document.querySelector('.logo span');
 
     if (sessionUser) {
-        btnLogin.style.display = "none";
-        btnReg.style.display = "none";
-        btnLogout.style.display = "inline-block";
-        btnLogout.innerText = sessionUser.name + " 님 (로그아웃)";
+        if(btnLogin) btnLogin.style.display = "none";
+        if(btnReg) btnReg.style.display = "none";
+        if(btnLogout) {
+            btnLogout.style.display = "inline-block";
+            btnLogout.innerText = sessionUser.name + " 님 (로그아웃)";
+        }
 
-        // 스태프 확인
         const { data: staffData } = await _supabase.from('staff').select('*').eq('email', sessionUser.email);
         
         if (sessionUser.email === 'tgimbumbucu@gmail.com' || (staffData && staffData.length > 0)) {
-            adminPanel.style.display = "block";
+            if(adminPanel) adminPanel.style.display = "block";
             const role = (sessionUser.email === 'tgimbumbucu@gmail.com') ? 'SuperAdmin' : staffData[0].role_name;
-            logoSpan.innerHTML = `<strong style='color:#ffcc00;'>[${role}] Mode</strong>`;
+            if(logoSpan) logoSpan.innerHTML = `<strong style='color:#ffcc00;'>[${role}] Mode</strong>`;
         }
     }
 }
 
-// 스태프 임명/해제 기능
 async function promoteToStaff(email, name) {
     const role = prompt("역할 입력 (예: Staff, Manager)", "Staff");
     if(!role) return;
@@ -192,9 +203,9 @@ async function demoteFromStaff(email) {
     renderUserTable();
 }
 
-// 유저 관리 테이블 렌더링 (DB 데이터 기준)
 async function renderUserTable() {
     const tbody = document.getElementById('userTableBody');
+    if(!tbody) return;
     const { data: profiles } = await _supabase.from('profiles').select('*');
     const { data: staffList } = await _supabase.from('staff').select('*');
 
@@ -219,47 +230,16 @@ async function renderUserTable() {
     });
 }
 
-// 공지사항 팝업 띄우기
 async function showGlobalNoticeIfActive() {
     const { data } = await _supabase.from('notices').select('*').order('created_at', { ascending: false }).limit(1);
     if (data && data[0] && data[0].is_active) {
-        document.getElementById('globalNoticeText').innerText = data[0].content;
+        const noticeText = document.getElementById('globalNoticeText');
+        if(noticeText) noticeText.innerText = data[0].content;
         openModal('globalNoticeModal');
     }
 }
 
-// 모달 제어
-function openModal(id) { document.getElementById(id).style.display = "block"; }
-function closeModal(id) { document.getElementById(id).style.display = "none"; }
+function openModal(id) { const el = document.getElementById(id); if(el) el.style.display = "block"; }
+function closeModal(id) { const el = document.getElementById(id); if(el) el.style.display = "none"; }
 function logout() { localStorage.removeItem('user'); location.reload(); }
 function openAdminModal(id) { if(id==='userManagerModal') renderUserTable(); openModal(id); }
-
-// 1. 방문 기록을 남기는 함수 정의
-async function logVisit() {
-    // 위에서 이미 supabase가 정의되어 있어야 합니다.
-    if (typeof supabase === 'undefined') {
-        console.error('Supabase가 정의되지 않았습니다. 설정을 확인해주세요.');
-        return;
-    }
-
-    const { error } = await supabase
-        .from('visit_logs')
-        .insert([
-            { 
-                page_path: window.location.pathname,
-                referrer: document.referrer || 'direct',
-                user_agent: navigator.userAgent
-            }
-        ]);
-
-    if (error) {
-        console.error('방문 기록 저장 실패:', error);
-    } else {
-        console.log('방문 기록이 성공적으로 저장되었습니다.');
-    }
-}
-
-// 2. 페이지 로드 시 기존 코드를 방해하지 않고 실행
-document.addEventListener('DOMContentLoaded', () => {
-    logVisit();
-});
