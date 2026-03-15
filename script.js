@@ -233,3 +233,33 @@ function openModal(id) { document.getElementById(id).style.display = "block"; }
 function closeModal(id) { document.getElementById(id).style.display = "none"; }
 function logout() { localStorage.removeItem('user'); location.reload(); }
 function openAdminModal(id) { if(id==='userManagerModal') renderUserTable(); openModal(id); }
+
+// 1. 방문 기록을 남기는 함수 정의
+async function logVisit() {
+    // 위에서 이미 supabase가 정의되어 있어야 합니다.
+    if (typeof supabase === 'undefined') {
+        console.error('Supabase가 정의되지 않았습니다. 설정을 확인해주세요.');
+        return;
+    }
+
+    const { error } = await supabase
+        .from('visit_logs')
+        .insert([
+            { 
+                page_path: window.location.pathname,
+                referrer: document.referrer || 'direct',
+                user_agent: navigator.userAgent
+            }
+        ]);
+
+    if (error) {
+        console.error('방문 기록 저장 실패:', error);
+    } else {
+        console.log('방문 기록이 성공적으로 저장되었습니다.');
+    }
+}
+
+// 2. 페이지 로드 시 기존 코드를 방해하지 않고 실행
+document.addEventListener('DOMContentLoaded', () => {
+    logVisit();
+});
