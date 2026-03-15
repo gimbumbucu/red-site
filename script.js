@@ -1,5 +1,12 @@
+// =====================================
+// 🟢 수파베이스 연결 설정
+// =====================================
+const SUPABASE_URL = 'https://byecwfyjpgoxkxsxbzep.supabase.co'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1bXBocW12ZmJzbHVtZnVweGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NTA2NjUsImV4cCI6MjA4OTEyNjY2NX0.GhNnCIf51lQj-CINq-4vt1DqDTsfsUZVg3Yjtg7W_Ow'; // 사진에서 복사한 ANON KEY를 넣어주세요.
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. 네비게이션 스크롤 이동
+    // 1. [기존 유지] 네비게이션 스크롤 이동
     document.querySelectorAll('.nav-links a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
@@ -9,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 2. 스크롤 네비게이션 블러 효과
+    // 2. [기존 유지] 스크롤 네비게이션 블러 효과
     const navbar = document.querySelector('.navbar');
     window.addEventListener('scroll', () => {
         if (window.scrollY > 50) {
@@ -21,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 3. 요소 페이드인 애니메이션 (갤러리 사진 포함)
+    // 3. [기존 유지] 요소 페이드인 애니메이션
     const cards = document.querySelectorAll('.glass-card, .gallery-item');
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -39,373 +46,192 @@ document.addEventListener("DOMContentLoaded", () => {
         observer.observe(card);
     });
 
-    // =====================================
-    //  로컬 스토리지 DB 초기화 및 인증 관리
-    // =====================================
+    // 4. 초기 데이터 로드
     checkAuth();
     showGlobalNoticeIfActive();
 
-    // 회원가입 전송
+    // =====================================
+    // 🔐 회원가입 (Supabase 연동)
+    // =====================================
     const regForm = document.getElementById('registerForm');
     if (regForm) {
-        regForm.addEventListener('submit', (e) => {
+        regForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('regName').value;
             const email = document.getElementById('regEmail').value;
             const password = document.getElementById('regPassword').value;
             const passwordConfirm = document.getElementById('regPasswordConfirm').value;
 
-            // 🚨 비밀번호 일치 검사 로직 추가 (보안 강화)
             if (password !== passwordConfirm) {
-                alert('입력하신 두 비밀번호가 서로 일치하지 않습니다!\n다시 확인해 주세요.');
-                return;
+                alert('비밀번호가 서로 일치하지 않습니다!'); return;
             }
 
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            if (users.find(u => u.email === email)) {
-                alert('이미 가입된 이메일입니다!'); return;
-            }
-
-            users.push({ name, email, password, role: 'User', status: 'Active' });
-            localStorage.setItem('users', JSON.stringify(users));
-            alert('🎉 회원가입 완료!\n소중한 계정이 생성되었습니다. 이제 로그인 해주세요.');
-            closeModal('registerModal');
-            regForm.reset();
-            openModal('loginModal'); 
-        });
-    }
-
-    // 로그인
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            // 관리자 하드코딩 패스
-            let user = null;
-            if (email === 'tgimbumbucu@gmail.com' && password === 'aa235700!!') {
-                user = { email: email, role: 'SuperAdmin', name: '레드 총괄관리자', status: 'Active' };
-            } else {
-                const users = JSON.parse(localStorage.getItem('users')) || [];
-                user = users.find(u => u.email === email && u.password === password);
-            }
-            
-            if (user) {
-                if(user.status === 'Banned') {
-                    alert('🚨 해당 계정은 스태프에 의해 영구 차단되었습니다.');
-                    return;
-                }
-                localStorage.setItem('user', JSON.stringify(user));
-                if(user.role === 'SuperAdmin' || user.role === 'Staff') {
-                    alert(`👑 [${user.role}] 로그인 승인!\n스태프 관리 권한 창이 활성화되었습니다.`);
-                } else {
-                    alert(`환영합니다, ${user.name}님!`);
-                }
-                closeModal('loginModal');
-                loginForm.reset();
-                checkAuth();
-            } else {
-                alert('이메일 또는 비밀번호가 일치하지 않습니다.');
-            }
-        });
-    }
-
-    // =====================================
-    //  데이터베이스: 문의사항(Inquiries) 로직
-    // =====================================
-    const supportForm = document.getElementById("supportForm");
-    if (supportForm) {
-        supportForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const inputs = supportForm.querySelectorAll('input, select, textarea');
-            const robloxId = inputs[0].value;
-            const type = inputs[1].value;
-            const content = inputs[2].value;
-            const authorEmail = JSON.parse(localStorage.getItem('user'))?.email || "비회원 방문자";
-
-            const inquiries = JSON.parse(localStorage.getItem('inquiries')) || [];
-            inquiries.push({
-                id: Date.now(),
-                author: authorEmail,
-                robloxId: robloxId,
-                type: type,
-                content: content,
-                status: 'Pending',
-                date: new Date().toLocaleString()
+            const { data, error } = await _supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: { data: { full_name: name } }
             });
-            localStorage.setItem('inquiries', JSON.stringify(inquiries));
 
-            alert("✅ 문의가 정상적으로 접수되었습니다! 스태프가 확인 후 조치합니다.");
-            supportForm.reset();
-            updateInquiryCountBadge();
-        });
-    }
-
-    // =====================================
-    //  스태프 전용 관리 기능 저장소 연동
-    // =====================================
-    const noticeForm = document.getElementById("noticeForm");
-    if(noticeForm) {
-        noticeForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const msg = document.getElementById("noticeMessage").value;
-            const active = document.getElementById("noticeActive").checked;
-            localStorage.setItem('globalNotice', JSON.stringify({text: msg, active: active}));
-            alert(`✅ 전면 공지사항이 ${active ? '활성화' : '비활성화'}되어 저장되었습니다!`);
-            closeModal('noticeManagerModal');
-            showGlobalNoticeIfActive(); // 관리자 폰에도 바로 띄우기
-        });
-    }
-    // =====================================
-    //  비밀번호 찾기(재설정) 시스템 추가
-    // =====================================
-    const btnVerifyForgot = document.getElementById('btnVerifyForgot');
-    const forgotForm = document.getElementById('forgotForm');
-    let validatedUserIndex = -1; // 재설정할 회원 정보의 순서 기억
-
-    // 1단계: 계정 존재 여부 확인
-    if (btnVerifyForgot) {
-        btnVerifyForgot.addEventListener('click', () => {
-            const email = document.getElementById('forgotEmail').value.trim();
-            const name = document.getElementById('forgotName').value.trim();
-            
-            if(!email || !name) {
-                alert("이메일과 닉네임을 모두 입력해주세요."); return;
-            }
-
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            validatedUserIndex = users.findIndex(u => u.email === email && u.name === name);
-
-            if (validatedUserIndex !== -1) {
-                alert(`✅ 계정 확인 성공!\n${users[validatedUserIndex].name}님의 정보를 찾았습니다.\n새롭게 사용할 비밀번호를 입력해주세요.`);
-                // 정보 입력 칸 닫고, 비밀번호 변경 칸 스르륵 열기
-                document.getElementById('forgotEmail').readOnly = true;
-                document.getElementById('forgotName').readOnly = true;
-                document.getElementById('newPasswordGroup').style.display = 'block';
-                document.getElementById('btnVerifyForgot').style.display = 'none';
-                document.getElementById('btnResetPassword').style.display = 'block';
-                document.getElementById('forgotNewPassword').required = true;
-            } else {
-                alert('❌ 일치하는 계정 정보가 없습니다. 이메일과 닉네임을 다시 확인해주세요!');
-            }
-        });
-    }
-
-    // 2단계: 새 비밀번호로 저장(초기화)
-    if (forgotForm) {
-        forgotForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const newPassword = document.getElementById('forgotNewPassword').value;
-
-            if (validatedUserIndex !== -1) {
-                const users = JSON.parse(localStorage.getItem('users')) || [];
-                users[validatedUserIndex].password = newPassword; // 비번 덮어씌우기
-                localStorage.setItem('users', JSON.stringify(users));
-
-                alert('🔑 비밀번호가 완벽하게 재설정되었습니다!\n새로운 비밀번호로 로그인해주세요.');
-                
-                // 폼 상태 원래대로 초기화 (다음을 위해)
-                document.getElementById('forgotEmail').readOnly = false;
-                document.getElementById('forgotName').readOnly = false;
-                document.getElementById('newPasswordGroup').style.display = 'none';
-                document.getElementById('btnVerifyForgot').style.display = 'block';
-                document.getElementById('btnResetPassword').style.display = 'none';
-                forgotForm.reset();
-                validatedUserIndex = -1;
-
-                closeModal('forgotPasswordModal');
+            if (error) alert('가입 실패: ' + error.message);
+            else {
+                // profiles 테이블에 추가 정보 저장
+                await _supabase.from('profiles').insert([{ id: data.user.id, username: name, email: email }]);
+                alert('🎉 가입 성공! 이제 로그인해 주세요.');
+                closeModal('registerModal');
                 openModal('loginModal');
             }
         });
     }
 
-}); // DOMContentLoaded 닫기
+    // =====================================
+    // 🔑 로그인 (Supabase 연동)
+    // =====================================
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
 
-// =======================
-//   모달 및 관리자 액션 로직
-// =======================
-function openModal(modalId) { document.getElementById(modalId).style.display = "block"; }
-function closeModal(modalId) { document.getElementById(modalId).style.display = "none"; }
-window.onclick = function(event) {
-    document.querySelectorAll('.modal').forEach(modal => {
-        if (event.target === modal) modal.style.display = "none";
-    });
-}
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
-// 스태프 등급 이상 패널 렌더링
-function checkAuth() {
-    const user = JSON.parse(localStorage.getItem('user'));
-    
-    // UI 요소들
+            if (error) alert('로그인 실패: ' + error.message);
+            else {
+                localStorage.setItem('user', JSON.stringify({ 
+                    id: data.user.id, email: data.user.email, name: data.user.user_metadata.full_name 
+                }));
+                alert(`환영합니다, ${data.user.user_metadata.full_name}님!`);
+                location.reload(); 
+            }
+        });
+    }
+
+    // =====================================
+    // 📝 문의사항 접수 (Supabase 연동)
+    // =====================================
+    const supportForm = document.getElementById("supportForm");
+    if (supportForm) {
+        supportForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const inputs = supportForm.querySelectorAll('input, select, textarea');
+            const { error } = await _supabase.from('tickets_log').insert([{
+                roblox_name: inputs[0].value,
+                type: inputs[1].value,
+                content: inputs[2].value
+            }]);
+
+            if (error) alert("접수 실패");
+            else {
+                alert("✅ 문의가 정상적으로 접수되었습니다!");
+                supportForm.reset();
+            }
+        });
+    }
+
+    // =====================================
+    // 📢 공지사항 설정 (관리자 전용)
+    // =====================================
+    const noticeForm = document.getElementById("noticeForm");
+    if(noticeForm) {
+        noticeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { error } = await _supabase.from('notices').insert([{
+                content: document.getElementById("noticeMessage").value,
+                is_active: document.getElementById("noticeActive").checked
+            }]);
+
+            if (error) alert("저장 실패");
+            else {
+                alert("✅ 공지사항이 적용되었습니다.");
+                closeModal('noticeManagerModal');
+                location.reload();
+            }
+        });
+    }
+});
+
+// =====================================
+// 👑 권한 및 관리자 액션 로직
+// =====================================
+async function checkAuth() {
+    const sessionUser = JSON.parse(localStorage.getItem('user'));
     const btnLogin = document.getElementById('btnLoginBtn');
     const btnReg = document.getElementById('btnRegBtn');
     const btnLogout = document.getElementById('btnLogoutBtn');
     const adminPanel = document.getElementById('adminPanel');
     const logoSpan = document.querySelector('.logo span');
 
-    updateInquiryCountBadge();
+    if (sessionUser) {
+        btnLogin.style.display = "none";
+        btnReg.style.display = "none";
+        btnLogout.style.display = "inline-block";
+        btnLogout.innerText = sessionUser.name + " 님 (로그아웃)";
 
-    if (user) {
-        if(btnLogin) btnLogin.style.display = "none";
-        if(btnReg) btnReg.style.display = "none";
-        if(btnLogout) {
-            btnLogout.style.display = "inline-block";
-            btnLogout.innerText = user.name + " 님 (로그아웃)";
-        }
+        // 스태프 확인
+        const { data: staffData } = await _supabase.from('staff').select('*').eq('email', sessionUser.email);
         
-        // 권한 체크
-        if (user.role === 'SuperAdmin' || user.role === 'Staff') {
-            if(adminPanel) adminPanel.style.display = "block";
-            if(logoSpan) logoSpan.innerHTML = `<strong style='color:#ffcc00;'>[STAFF - ${user.role}] Mode</strong>`;
-        } else {
-            if(adminPanel) adminPanel.style.display = "none";
-            if(logoSpan) logoSpan.innerText = "Admin JumpMap";
+        if (sessionUser.email === 'tgimbumbucu@gmail.com' || (staffData && staffData.length > 0)) {
+            adminPanel.style.display = "block";
+            const role = (sessionUser.email === 'tgimbumbucu@gmail.com') ? 'SuperAdmin' : staffData[0].role_name;
+            logoSpan.innerHTML = `<strong style='color:#ffcc00;'>[${role}] Mode</strong>`;
         }
-    } else {
-        if(btnLogin) btnLogin.style.display = "inline-block";
-        if(btnReg) btnReg.style.display = "inline-block";
-        if(btnLogout) btnLogout.style.display = "none";
-        if(adminPanel) adminPanel.style.display = "none";
-        if(logoSpan) logoSpan.innerText = "Admin JumpMap";
     }
 }
 
-function logout() {
-    localStorage.removeItem('user');
-    checkAuth();
-    alert('✅ 안전하게 로그아웃되었습니다.');
+// 스태프 임명/해제 기능
+async function promoteToStaff(email, name) {
+    const role = prompt("역할 입력 (예: Staff, Manager)", "Staff");
+    if(!role) return;
+    await _supabase.from('staff').insert([{ email: email, username: name, role_name: role }]);
+    alert("임명 완료");
+    renderUserTable();
 }
 
-// 뱃지 숫자 새로고침
-function updateInquiryCountBadge() {
-    const inquiries = JSON.parse(localStorage.getItem('inquiries')) || [];
-    const pendingCount = inquiries.filter(i => i.status === 'Pending').length;
-    const badge = document.getElementById('inquiryCountCheck');
-    if(badge) badge.innerText = pendingCount;
+async function demoteFromStaff(email) {
+    if(!confirm("스태프 권한을 해제할까요?")) return;
+    await _supabase.from('staff').delete().eq('email', email);
+    alert("해제 완료");
+    renderUserTable();
 }
 
-// 공지사항 띄우기
-function showGlobalNoticeIfActive() {
-    const notice = JSON.parse(localStorage.getItem('globalNotice'));
-    if(notice && notice.active && notice.text.trim() !== "") {
-        document.getElementById('globalNoticeText').innerText = notice.text;
+// 유저 관리 테이블 렌더링 (DB 데이터 기준)
+async function renderUserTable() {
+    const tbody = document.getElementById('userTableBody');
+    const { data: profiles } = await _supabase.from('profiles').select('*');
+    const { data: staffList } = await _supabase.from('staff').select('*');
+
+    tbody.innerHTML = '';
+    profiles.forEach(u => {
+        const staffInfo = staffList.find(s => s.email === u.email);
+        const roleText = staffInfo ? `<span style="color:#f39c12">${staffInfo.role_name}</span>` : '일반유저';
+        
+        tbody.innerHTML += `
+            <tr>
+                <td>${u.username}</td>
+                <td>${u.email}</td>
+                <td><strong>${roleText}</strong></td>
+                <td><span class="status-badge success">정상</span></td>
+                <td>
+                    ${staffInfo ? 
+                        `<button class="btn-action danger" onclick="demoteFromStaff('${u.email}')">해제</button>` : 
+                        `<button class="btn-action success" onclick="promoteToStaff('${u.email}', '${u.username}')">임명</button>`
+                    }
+                </td>
+            </tr>`;
+    });
+}
+
+// 공지사항 팝업 띄우기
+async function showGlobalNoticeIfActive() {
+    const { data } = await _supabase.from('notices').select('*').order('created_at', { ascending: false }).limit(1);
+    if (data && data[0] && data[0].is_active) {
+        document.getElementById('globalNoticeText').innerText = data[0].content;
         openModal('globalNoticeModal');
     }
 }
 
-// =======================
-//   스태프 강력 권한 콘솔 관리
-// =======================
-function openAdminModal(modalId) {
-    if(modalId === 'userManagerModal') renderUserTable();
-    if(modalId === 'inquiryManagerModal') renderInquiryTable();
-    if(modalId === 'noticeManagerModal') {
-        const notice = JSON.parse(localStorage.getItem('globalNotice'));
-        if(notice) {
-            document.getElementById('noticeMessage').value = notice.text;
-            document.getElementById('noticeActive').checked = notice.active;
-        }
-    }
-    openModal(modalId);
-}
-
-// 1. 유저 관리 테이블 렌더링
-function renderUserTable() {
-    const tbody = document.getElementById('userTableBody');
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    tbody.innerHTML = '';
-
-    if(users.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">가입한 유저가 없습니다.</td></tr>';
-        return;
-    }
-
-    users.forEach((u, index) => {
-        const roleText = u.role === 'Staff' ? '<span style="color:#f39c12">스태프(Staff)</span>' : '일반유저';
-        const stBadg = u.status === 'Banned' ? '<span class="status-badge danger">차단됨</span>' : '<span class="status-badge success">정상</span>';
-        
-        tbody.innerHTML += `
-            <tr>
-                <td>${u.name}</td>
-                <td>${u.email}</td>
-                <td><strong>${roleText}</strong></td>
-                <td>${stBadg}</td>
-                <td>
-                    <button class="btn-action success" onclick="setStaff(${index}, true)">스태프 임명</button>
-                    <button class="btn-action danger" onclick="toggleBan(${index})">차단 / 해제</button>
-                </td>
-            </tr>
-        `;
-    });
-}
-
-function setStaff(index, isStaff) {
-    const users = JSON.parse(localStorage.getItem('users'));
-    users[index].role = isStaff ? 'Staff' : 'User';
-    localStorage.setItem('users', JSON.stringify(users));
-    renderUserTable();
-    alert('권한이 변경되었습니다!');
-}
-function toggleBan(index) {
-    const users = JSON.parse(localStorage.getItem('users'));
-    users[index].status = users[index].status === 'Banned' ? 'Active' : 'Banned';
-    localStorage.setItem('users', JSON.stringify(users));
-    renderUserTable();
-}
-
-// 2. 문의 내역 관리 테이블 렌더링
-function renderInquiryTable() {
-    const tbody = document.getElementById('inquiryTableBody');
-    const inquiries = JSON.parse(localStorage.getItem('inquiries')) || [];
-    tbody.innerHTML = '';
-    
-    // 최신순 정렬
-    inquiries.sort((a,b) => b.id - a.id);
-
-    if(inquiries.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">접수된 새로운 문의가 없습니다.</td></tr>';
-        return;
-    }
-
-    inquiries.forEach((iq) => {
-        const badgeClass = iq.status === 'Pending' ? 'pending' : 'resolved';
-        const badgeText = iq.status === 'Pending' ? '답변 대기' : '처리 완료';
-
-        tbody.innerHTML += `
-            <tr>
-                <td>${iq.robloxId}<br><small style="color:#aaa;">${iq.author}</small></td>
-                <td><span style="color:#3498db; font-weight:bold;">${iq.type}</span></td>
-                <td style="max-width:250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${iq.content}">
-                    ${iq.content}
-                </td>
-                <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
-                <td>
-                    <button class="btn-action success" onclick="resolveInquiry(${iq.id})">✔ 완료처리</button>
-                    <button class="btn-action danger" onclick="deleteInquiry(${iq.id})">삭제</button>
-                </td>
-            </tr>
-        `;
-    });
-}
-
-function resolveInquiry(id) {
-    const inquiries = JSON.parse(localStorage.getItem('inquiries'));
-    const target = inquiries.find(i => i.id === id);
-    if(target) {
-        target.status = 'Resolved';
-        localStorage.setItem('inquiries', JSON.stringify(inquiries));
-        renderInquiryTable();
-        updateInquiryCountBadge();
-        alert('문의 상태가 [처리 완료]로 변경되었습니다.');
-    }
-}
-function deleteInquiry(id) {
-    if(!confirm("이 문의 내역을 완전히 삭제하시겠습니까?")) return;
-    let inquiries = JSON.parse(localStorage.getItem('inquiries'));
-    inquiries = inquiries.filter(i => i.id !== id);
-    localStorage.setItem('inquiries', JSON.stringify(inquiries));
-    renderInquiryTable();
-    updateInquiryCountBadge();
-}
+// 모달 제어
+function openModal(id) { document.getElementById(id).style.display = "block"; }
+function closeModal(id) { document.getElementById(id).style.display = "none"; }
+function logout() { localStorage.removeItem('user'); location.reload(); }
+function openAdminModal(id) { if(id==='userManagerModal') renderUserTable(); openModal(id); }
