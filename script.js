@@ -1,8 +1,6 @@
-// =====================================
-// 🟢 수파베이스 연결 설정
-// =====================================
-const SUPABASE_URL = 'https://byecwfyjpgoxkxsxbzep.supabase.co'; 
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1bXBocW12ZmJzbHVtZnVweGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NTA2NjUsImV4cCI6MjA4OTEyNjY2NX0.GhNnCIf51lQj-CINq-4vt1DqDTsfsUZVg3Yjtg7W_Ow'; // 사진에서 복사한 ANON KEY를 넣어주세요.
+// 🟢 script.js 맨 윗부분 수정
+const SUPABASE_URL = 'https://humphqmvfbslumfupxlb.supabase.co'; // [General] 탭에서 확인 가능!
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1bXBocW12ZmJzbHVtZnVweGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NTA2NjUsImV4cCI6MjA4OTEyNjY2NX0.GhNnCIf51lQj-CINq-4vt1DqDTsfsUZVg3Yjtg7W_Ow'; // 방금 복사한 그 키
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 document.addEventListener("DOMContentLoaded", () => {
