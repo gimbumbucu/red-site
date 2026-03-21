@@ -47,9 +47,8 @@ document.addEventListener("DOMContentLoaded", () => {
         observer.observe(card);
     });
 
-    // 5. 초기 데이터 로드
+    // 5. 초기 데이터 로드 및 세션 체크
     checkAuth();
-    showGlobalNoticeIfActive();
 
     // 🔐 회원가입 로직
     const regForm = document.getElementById('registerForm');
@@ -62,7 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const passwordConfirm = document.getElementById('regPasswordConfirm').value;
 
             if (password !== passwordConfirm) {
-                alert('비밀번호가 서로 일치하지 않습니다!'); return;
+                alert('비밀번호가 서로 일치하지 않습니다!'); 
+                return;
             }
 
             const { data, error } = await _supabase.auth.signUp({
@@ -71,8 +71,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 options: { data: { full_name: name } }
             });
 
-            if (error) alert('가입 실패: ' + error.message);
-            else {
+            if (error) {
+                alert('가입 실패: ' + error.message);
+            } else {
                 await _supabase.from('profiles').insert([{ id: data.user.id, username: name, email: email }]);
                 alert('🎉 가입 성공! 이제 로그인해 주세요.');
                 closeModal('registerModal');
@@ -81,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 🔑 로그인 로직
+    // 🔑 로그인 로직 (세션 자동 유지 적용)
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -91,13 +92,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
-            if (error) alert('로그인 실패: ' + error.message);
-            else {
-                localStorage.setItem('user', JSON.stringify({ 
-                    id: data.user.id, email: data.user.email, name: data.user.user_metadata.full_name 
-                }));
+            if (error) {
+                alert('로그인 실패: 이메일이나 비밀번호를 확인해주세요.');
+            } else {
                 alert(`환영합니다, ${data.user.user_metadata.full_name}님!`);
-                location.reload(); 
+                closeModal('loginModal');
+                location.reload(); // 새로고침하여 네비게이션 바 상태 업데이트
+            }
+        });
+    }
+
+    // 🔎 비밀번호 찾기 로직 (이메일 및 닉네임 확인 후 이메일 발송)
+    const forgotForm = document.getElementById('forgotForm');
+    if (forgotForm) {
+        document.getElementById('btnVerifyForgot').addEventListener('click', async () => {
+            const email = document.getElementById('forgotEmail').value;
+            const name = document.getElementById('forgotName').value;
+
+            if (!email || !name) {
+                alert('가입하신 이메일과 닉네임을 모두 입력해주세요.');
+                return;
+            }
+
+            // DB에서 이메일과 닉네임 일치 여부 확인
+            const { data, error } = await _supabase
+                .from('profiles')
+                .select('*')
+                .eq('email', email)
+                .eq('username', name)
+                .single();
+
+            if (error || !data) {
+                alert('입력하신 정보와 일치하는 계정을 찾을 수 없습니다.');
+                return;
+            }
+
+            // 일치하면 수파베이스 비밀번호 재설정 이메일 발송
+            const { error: resetError } = await _supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin // 재설정 완료 후 돌아올 주소
+            });
+
+            if (resetError) {
+                alert('이메일 발송에 실패했습니다.');
+            } else {
+                alert('✅ 비밀번호 재설정 링크를 이메일로 발송했습니다! 메일함을 확인해주세요.');
+                closeModal('forgotPasswordModal');
             }
         });
     }
@@ -121,60 +160,82 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-
-    // 📢 공지사항 설정
-    const noticeForm = document.getElementById("noticeForm");
-    if(noticeForm) {
-        noticeForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const { error } = await _supabase.from('notices').insert([{
-                content: document.getElementById("noticeMessage").value,
-                is_active: document.getElementById("noticeActive").checked
-            }]);
-
-            if (error) alert("저장 실패");
-            else {
-                alert("✅ 공지사항이 적용되었습니다.");
-                closeModal('noticeManagerModal');
-                location.reload();
-            }
-        });
-    }
 });
 
+
 // =====================================
-// 👑 주요 함수 (함수 선언부는 밖으로 뺌)
+// 👑 주요 함수 모음
 // =====================================
 
-// 방문 기록 함수 (IP 수집 기능 추가 버전)
+// 🔄 세션 유지 및 UI 업데이트 함수
+async function checkAuth() {
+    // 수파베이스에서 현재 세션(로그인 상태) 가져오기
+    const { data: { session } } = await _supabase.auth.getSession();
+    
+    const btnLogin = document.getElementById('btnLoginBtn');
+    const btnReg = document.getElementById('btnRegBtn');
+    const btnLogout = document.getElementById('btnLogoutBtn');
+    const adminPanel = document.getElementById('adminPanel');
+
+    if (session) {
+        // 로그인 되어 있을 때 버튼 변경
+        if(btnLogin) btnLogin.style.display = 'none';
+        if(btnReg) btnReg.style.display = 'none';
+        if(btnLogout) btnLogout.style.display = 'inline-block';
+        
+        // 여기에 어드민 계정인지 확인해서 adminPanel을 보여주는 로직을 추가할 수 있습니다.
+        // 예: 특정 이메일이면 adminPanel.style.display = 'block';
+    } else {
+        // 로그아웃 상태일 때
+        if(btnLogin) btnLogin.style.display = 'inline-block';
+        if(btnReg) btnReg.style.display = 'inline-block';
+        if(btnLogout) btnLogout.style.display = 'none';
+        if(adminPanel) adminPanel.style.display = 'none';
+    }
+}
+
+// 🚪 로그아웃 함수
+window.logout = async function() {
+    const { error } = await _supabase.auth.signOut();
+    if (error) {
+        alert('로그아웃 중 오류가 발생했습니다.');
+    } else {
+        alert('성공적으로 로그아웃 되었습니다.');
+        location.reload(); 
+    }
+}
+
+// 🪟 모달(팝업창) 열기/닫기 함수
+window.openModal = function(modalId) {
+    const modal = document.getElementById(modalId);
+    if(modal) {
+        modal.style.display = 'flex'; // 혹은 블록에 맞게 'block'
+    }
+}
+
+window.closeModal = function(modalId) {
+    const modal = document.getElementById(modalId);
+    if(modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// 방문 기록 함수 
 async function logVisit() {
     try {
-        // 1. 외부 API를 통해 유저의 진짜 IP를 알아냅니다.
         const ipRes = await fetch('https://api.ipify.org?format=json');
         const ipData = await ipRes.json();
         const userIp = ipData.ip;
 
-        // 2. 알아낸 IP를 포함해서 수파베이스에 저장합니다.
-        const { error } = await _supabase
-            .from('visit_logs')
-            .insert([
-                { 
-                    page_path: window.location.pathname,
-                    referrer: document.referrer || 'direct',
-                    user_agent: navigator.userAgent,
-                    ip_address: userIp // 이제 진짜 IP가 들어갑니다!
-                }
-            ]);
-
-        if (error) throw error;
-        console.log('✅ 방문 기록 저장 완료 (IP:', userIp, ')');
-    } catch (err) {
-        // IP 가져오기에 실패하더라도 다른 정보는 저장하도록 예외 처리
-        console.error('IP 수집 실패:', err);
-        await _supabase.from('visit_logs').insert([{ 
+        const { error } = await _supabase.from('visit_logs').insert([{ 
             page_path: window.location.pathname,
             referrer: document.referrer || 'direct',
-            user_agent: navigator.userAgent
+            user_agent: navigator.userAgent,
+            ip_address: userIp
         }]);
+
+        if (error) throw error;
+    } catch (err) {
+        console.error('IP 수집 실패:', err);
     }
 }
